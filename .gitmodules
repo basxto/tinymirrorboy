@@ -1,0 +1,6 @@
+[submodule "hardware.inc"]
+	path = include/hardware.inc
+	url = https://github.com/gbdev/hardware.inc
+[submodule "tools/titchack"]
+	path = tools/titchack
+	url = https://github.com/basxto/titchack
