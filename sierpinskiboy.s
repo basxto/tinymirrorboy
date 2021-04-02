@@ -4,6 +4,11 @@ SECTION "HRAM", HRAM
 
 SCX: db
 
+;SECTION "TL2MP", ROM0[256-LOW(HeaderEnd)]
+;ROMEND::
+;	ROMEND        EQU 256-LOW($14E)
+	;EXPORT ROMEND
+
 
 SECTION "TL2MP", ROM0[$0]
 	; draws 1bpp tile at (de)
@@ -74,16 +79,6 @@ rendertext::
 	ret
 
 
-SECTION "VBLANKct", ROM0[$2037]
-vmove::
-	ld hl, rSCY
-	inc [hl]
-	; also use rDIV for music
-	ldh	a, [rDIV]
-	rrca
-	ldh [rNR14], a
-
-	reti
 
 SECTION "VBLANK", ROM0[$40]
 	ldh	a, [rDIV]
@@ -117,25 +112,7 @@ SECTION "HBLANK", ROM0[$48]
 	ldh [rBGP], a
 	reti
 
-SECTION "Main", ROM0[$66]
-sierpinski:
-	; We start in the center
-	; and move  to the left
-	bit 0, b
-	jr NZ, .odd
-	rlca
-.odd:
-    ; write as 1BPP
-    ld [hl+], a ; 1
-    ld [hl+], a ; 1
-    ld d, a
-	; triangle grows to the right
-    rrca
-    xor a, d
-    dec b ; 1
-    ; loop while b != 0
-	jr NZ, sierpinski ; 2
-	ret
+SECTION "Main", ROM0[$65]
 
 main::
 	ldh [rLCDC], a
@@ -196,14 +173,26 @@ main::
 
 	ld	a, STATF_MODE00 | STATF_MODE01
 	ldh	[rSTAT], a
-	ei
 	ld	a, IEF_LCDC | IEF_VBLANK
 	ldh	[rIE], a
 	; set hl for use in interrupt  handler
 	ld	hl, rSCX
-infloop:
+	; enable interrupts
+	ei
+	; the fun begins =)
+infloop::
 	halt
 	jr infloop
+
+vmove::
+	ld hl, rSCY
+	inc [hl]
+	; also use rDIV for music
+	ldh	a, [rDIV]
+	rrca
+	ldh [rNR14], a
+
+	reti
 
 	; Should be copied to any custom section
 	; We have some header overhang, we have to keep in mind
@@ -252,8 +241,26 @@ SECTION "HeaderFree2", ROM0[$11C]
 	db %00100110,%00100111 ; 1
 	db %01110100,%00010110 ; 5
 	db %01110100,%01110111 ; 6
-afterHeader::
-	nop
+afterHeader:
+
+sierpinski::
+	; We start in the center
+	; and move  to the left
+	bit 0, b
+	jr NZ, .odd
+	rlca
+.odd:
+    ; write as 1BPP
+    ld [hl+], a ; 1
+    ld [hl+], a ; 1
+    ld d, a
+	; triangle grows to the right
+    rrca
+    xor a, d
+    dec b ; 1
+    ; loop while b != 0
+	jr NZ, sierpinski ; 2
+	ret
 
 
 SECTION "HeaderCgb", ROM0[$142]
@@ -292,7 +299,7 @@ SECTION "HeaderCheck", ROM0[$14B]
 	db	$86
 
 SECTION "HeaderEnd", ROM0[$14E]
-HeaderEnd:
+HeaderEnd::
 	; Is here to generate warnings
 	; Will be cut off
 	rst $38

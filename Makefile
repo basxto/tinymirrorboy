@@ -22,9 +22,9 @@ build: $(ROM).$(EXT)
 	$(AS) -o $@ $^
 
 %.$(EXT): %.o
-	$(LD) -o $@ $^
+	$(LD) -o $@ -m $*.map -n $*.sym $^
 	$(TCH) $@ '$$142' '$(palette)'
 	$(FIX) -f h $@
 
 clean:
-	$(RM) $(ROM).$(EXT) *.o
+	$(RM) $(ROM).$(EXT) *.o *.sym *.map
