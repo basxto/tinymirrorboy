@@ -1,15 +1,5 @@
 include "include/hardware.inc/hardware.inc"
 
-SECTION "HRAM", HRAM
-
-SCX: db
-
-;SECTION "TL2MP", ROM0[256-LOW(HeaderEnd)]
-;ROMEND::
-;	ROMEND        EQU 256-LOW($14E)
-	;EXPORT ROMEND
-
-
 SECTION "TL2MP", ROM0[$0]
 	; draws 1bpp tile at (de)
 	; to map starting at (hl)
@@ -78,12 +68,21 @@ rendertext::
 	jr NZ, .spriteloop
 	ret
 
+vmove::
+	ld hl, rSCY
+	inc [hl]
+	; also use rDIV for music
+	ldh	a, [rDIV]
+	;rrca
+	ldh [rNR14], a
+
+	reti
 
 
 SECTION "VBLANK", ROM0[$40]
 	ldh	a, [rDIV]
-	and a,$14
-	jp Z, vmove
+	and a,$12
+	jr Z, vmove
 	reti
 
 
@@ -95,13 +94,12 @@ SECTION "HBLANK", ROM0[$48]
 	ldh	a, [rSCY]
 	add	a, b
 	; do sprite flashing
-	ldh [rOBP0], a
 	ldh [rOBP1], a
 	; change offset every 8 scanlines
 	and	a, 8
 	rrca
-	ld	hl, SCX
-	add	a, [hl]
+	; add general X offset
+	add	a, 150
 	ldh [rSCX], a
 
 	; define background "image"
@@ -112,16 +110,10 @@ SECTION "HBLANK", ROM0[$48]
 	ldh [rBGP], a
 	reti
 
-SECTION "Main", ROM0[$65]
+;SECTION "Main", ROM0[$61]
 
 main::
 	ldh [rLCDC], a
-	ld	a, 150
-	ldh [SCX], a
-	;set object palette
-	ld	a, $55
-	ldh [rOBP0], a
-	ldh [rOBP1], a
 
 	ld	a, $08
 	ld hl, $81A0
@@ -179,20 +171,9 @@ main::
 	ld	hl, rSCX
 	; enable interrupts
 	ei
-	; the fun begins =)
 infloop::
 	halt
 	jr infloop
-
-vmove::
-	ld hl, rSCY
-	inc [hl]
-	; also use rDIV for music
-	ldh	a, [rDIV]
-	rrca
-	ldh [rNR14], a
-
-	reti
 
 	; Should be copied to any custom section
 	; We have some header overhang, we have to keep in mind

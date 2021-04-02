@@ -4,7 +4,7 @@
 RGBDS:=
 
 AS=$(RGBDS)rgbasm
-ASFLAGS=
+ASFLAGS=--halt-without-nop
 LD=$(RGBDS)rgblink
 LDFLAGS=
 FIX:=$(RGBDS)rgbfix
@@ -19,10 +19,10 @@ EXT:=cgb
 build: $(ROM).$(EXT)
 
 %.o: %.s
-	$(AS) -o $@ $^
+	$(AS) $(ASFLAGS) -o $@ $^
 
 %.$(EXT): %.o
-	$(LD) -o $@ -m $*.map -n $*.sym $^
+	$(LD) $(LDFLAGS) -o $@ -m $*.map -n $*.sym $^
 	$(TCH) $@ '$$142' '$(palette)'
 	$(FIX) -f h $@
 
