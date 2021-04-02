@@ -124,29 +124,29 @@ main::
 	; as a tilemap
 	ld	de, $81A0
 	ld	hl, $980C
-	call	tile2map
+	rst	tile2map
 
 	inc	h
 	ld	l,  $08
-	call	tile2map
+	rst	tile2map
 	ld	l,  $10
-	call	tile2map
+	rst	tile2map
 
 	inc	h
 	ld	l,  $04
-	call	tile2map
+	rst	tile2map
 	ld	l,  $14
-	call	tile2map
+	rst	tile2map
 
 	inc	h
 	ld	l,  b
-	call	tile2map
+	rst	tile2map
 	ld	l,  $08
-	call	tile2map
+	rst	tile2map
 	ld	l,  $10
-	call	tile2map
+	rst	tile2map
 	ld	l,  $18
-	call	tile2map
+	rst	tile2map
 
 	; show "text"
 	ld	de, $3420 ; X Y
