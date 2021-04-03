@@ -115,10 +115,28 @@ SECTION "HBLANK", ROM0[$48]
 main::
 	ldh [rLCDC], a
 
-	ld	a, $08
+	ld	a, e ;$08
 	ld hl, $81A0
 	ld b, l
-	call sierpinski
+
+sierpinski::
+	; We start in the center
+	; and move  to the left
+	bit 0, b
+	jr NZ, .odd
+	rlca
+.odd:
+    ; write as 1BPP
+    ld [hl+], a ; 1
+    ld [hl+], a ; 1
+    ld d, a
+	; triangle grows to the right
+    rrca
+    xor a, d
+    dec b ; 1
+    ; loop while b != 0
+	jr NZ, sierpinski ; 2
+
 
 	; load sierpinski tile
 	; as a tilemap
@@ -159,21 +177,9 @@ main::
 	ld	bc, $1702 ; index and counter
 	call rendertext
 
-	; enable display again
-	ld a, LCDCF_ON | LCDCF_BGON | LCDCF_BG8000 | LCDCF_OBJON
-	ldh [rLCDC], a
-
-	ld	a, STATF_MODE00 | STATF_MODE01
-	ldh	[rSTAT], a
-	ld	a, IEF_LCDC | IEF_VBLANK
-	ldh	[rIE], a
 	; set hl for use in interrupt  handler
 	ld	hl, rSCX
-	; enable interrupts
-	ei
-infloop::
-	halt
-	jr infloop
+	jp afterLogo
 
 	; Should be copied to any custom section
 	; We have some header overhang, we have to keep in mind
@@ -221,28 +227,23 @@ SECTION "HeaderFree2", ROM0[$11C]
 	db %01100001,%00100111 ; 2
 	db %00100110,%00100111 ; 1
 	db %01110100,%00010110 ; 5
-	db %01110100,%01110111 ; 6
-afterHeader:
+	db %01110100 ; 6 Hi
+afterLogoldhla::
+	db %01110111 ; 6 Lo
+afterLogo:
+	; enable display again
+	ld a, LCDCF_ON | LCDCF_BGON | LCDCF_BG8000 | LCDCF_OBJON
+	ldh [rLCDC], a
 
-sierpinski::
-	; We start in the center
-	; and move  to the left
-	bit 0, b
-	jr NZ, .odd
-	rlca
-.odd:
-    ; write as 1BPP
-    ld [hl+], a ; 1
-    ld [hl+], a ; 1
-    ld d, a
-	; triangle grows to the right
-    rrca
-    xor a, d
-    dec b ; 1
-    ; loop while b != 0
-	jr NZ, sierpinski ; 2
-	ret
+	ld	a, STATF_MODE00 | STATF_MODE01
+	ldh	[rSTAT], a
+	ld	a, IEF_LCDC | IEF_VBLANK
+	ldh	[rIE], a
+	; enable interrupts
+	ei
 
+	; basically jump over next byte with an emtpy load
+	db	$3E
 
 SECTION "HeaderCgb", ROM0[$142]
 	; Needed for "hacking" the title checksum
@@ -252,10 +253,9 @@ SECTION "HeaderCgb", ROM0[$142]
 
 SECTION "HeaderFree3", ROM0[$144]
 	; 3 bytes
-	; This is just a placeholder
-	nop
-	nop
-	nop
+infloop::
+	halt
+	jr infloop
 
 SECTION "HeaderCartridge", ROM0[$147]
 	; 3 bytes
