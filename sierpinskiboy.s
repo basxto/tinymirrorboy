@@ -43,7 +43,7 @@ tile2map::
 	ret
 
 vmove::
-	;rrca
+	rrca
 	; make "music"
 	ldh [rNR14], a
 
@@ -254,7 +254,7 @@ afterLogo:
 	ld	[hl+], a
 	; => hl=rSCY
 	; rDIV filter mask | rDIV
-	ld	bc, $1200 | LOW(rDIV)
+	ld	bc, $1400 | LOW(rDIV)
 	; enable interrupts
 	ei
 
