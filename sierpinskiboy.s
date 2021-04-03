@@ -42,6 +42,14 @@ tile2map::
 
 	ret
 
+vmove::
+	;rrca
+	; make "music"
+	ldh [rNR14], a
+
+	reti
+
+SECTION "RNDRTXT", ROM0[$28]
 ;	de ; X Y
 ;	bc ; index and counter
 ;	hl ; OAM address
@@ -68,21 +76,19 @@ rendertext::
 	jr NZ, .spriteloop
 	ret
 
-vmove::
-	ld hl, rSCY
-	inc [hl]
-	; also use rDIV for music
-	ldh	a, [rDIV]
-	;rrca
-	ldh [rNR14], a
-
-	reti
-
 
 SECTION "VBLANK", ROM0[$40]
-	ldh	a, [rDIV]
-	and a,$12
+	; main routine set hl=rSCY
+	inc [hl]
+	; main routine set c=rDIV
+	ldh	a, [c]
+	; main routine set d=$12
+	;and a, $12
+	and a, b
+	; wanna use rDIV for music
+	ldh	a, [c]
 	jr Z, vmove
+	dec [hl]
 	reti
 
 
@@ -90,9 +96,11 @@ SECTION "HBLANK", ROM0[$48]
 
 	ldh	a, [rLY]
 	inc a
-	ld	b, a
-	ldh	a, [rSCY]
-	add	a, b
+	ld	d, a
+	; main routine set hl=rSCY
+	;ldh	a, [rSCY]
+	ld	a, [hl]
+	add	a, d
 	; do sprite flashing
 	ldh [rOBP1], a
 	; change offset every 8 scanlines
@@ -103,7 +111,7 @@ SECTION "HBLANK", ROM0[$48]
 	ldh [rSCX], a
 
 	; define background "image"
-	ld	a, b
+	ld	a, d
 	inc a
 	and	a, $FD
 	or	a, $80
@@ -157,19 +165,20 @@ sierpinski::
 	rst	tile2map
 
 	inc	h
-	ld	l,  b
-	rst	tile2map
 	ld	l,  $08
 	rst	tile2map
 	ld	l,  $10
 	rst	tile2map
 	ld	l,  $18
 	rst	tile2map
+	ld	l,  b ; $0
+	rst	tile2map
 
 	; show "text"
 	ld	de, $3420 ; X Y
 	ld	bc, $0D0A ; index and counter
-	ld	hl, _OAMRAM
+	;ld	hl, _OAMRAM
+	ld	h, $FE ; _OAMRAM
 	call rendertext
 	ld	de, $683E ; X Y
 	ld	bc, $1501 ; index and counter
@@ -177,9 +186,12 @@ sierpinski::
 	ld	bc, $1702 ; index and counter
 	call rendertext
 
-	; set hl for use in interrupt  handler
-	ld	hl, rSCX
-	jp afterLogo
+	; set up interrupts
+	; SP is at $FFFE
+	ld	hl, sp + 1
+	; ld	hl, rIE
+	ld	a, IEF_LCDC | IEF_VBLANK
+	jp afterLogoldhla
 
 	; Should be copied to any custom section
 	; We have some header overhang, we have to keep in mind
@@ -231,19 +243,23 @@ SECTION "HeaderFree2", ROM0[$11C]
 afterLogoldhla::
 	db %01110111 ; 6 Lo
 afterLogo:
+	nop
 	; enable display again
-	ld a, LCDCF_ON | LCDCF_BGON | LCDCF_BG8000 | LCDCF_OBJON
-	ldh [rLCDC], a
-
+	ld	l, LOW(rLCDC)
+	ld	a, LCDCF_ON | LCDCF_BGON | LCDCF_BG8000 | LCDCF_OBJON
+	ld	[hl+], a
+	; set up stat interrupts
+	; ld	hl, rSTAT
 	ld	a, STATF_MODE00 | STATF_MODE01
-	ldh	[rSTAT], a
-	ld	a, IEF_LCDC | IEF_VBLANK
-	ldh	[rIE], a
+	ld	[hl+], a
+	; => hl=rSCY
+	; rDIV filter mask | rDIV
+	ld	bc, $1200 | LOW(rDIV)
 	; enable interrupts
 	ei
 
 	; basically jump over next byte with an emtpy load
-	db	$3E
+	db	$1E
 
 SECTION "HeaderCgb", ROM0[$142]
 	; Needed for "hacking" the title checksum
