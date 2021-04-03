@@ -179,12 +179,12 @@ sierpinski::
 	ld	bc, $0D0A ; index and counter
 	;ld	hl, _OAMRAM
 	ld	h, $FE ; _OAMRAM
-	call rendertext
+	rst rendertext
 	ld	de, $683E ; X Y
 	ld	bc, $1501 ; index and counter
-	call rendertext
+	rst rendertext
 	ld	bc, $1702 ; index and counter
-	call rendertext
+	rst rendertext
 
 	; set up interrupts
 	; SP is at $FFFE
