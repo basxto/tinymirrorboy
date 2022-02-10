@@ -3,8 +3,13 @@ include "include/hardware.inc/hardware.inc"
 SECTION "HeaderFree1", ROM0[$100]
 	; 4 bytes
 start:
-	nop
-	jr start
+	; disable display
+	ld	hl, rLCDC
+	ld	[hl], b
+	;RST $38 
+	;nop
+	;nop
+	;nop
 	; we could fall through and run the logo
 SECTION "HeaderLogo", ROM0[$104]
 	; This is the first half of the nintendo logo (cgb doesn't need more)
@@ -32,15 +37,51 @@ SECTION "HeaderLogo", ROM0[$104]
 	db   $0E
 SECTION "HeaderFree2", ROM0[$11C]
 	; This is being used for copying 4x4 images
-	nop
+	db %11100100,%01001111 ; L
+	db %01101001,%10010110 ; O
+	db %01010101,%01010010 ; V
+	db %01111110,%01000111 ; E
+	db %01100001,%00100111 ; 2
+	;db %01101001,%10010110 ; O
+	;db %01100001,%00100111 ; 2
+	;db %01100001,%00100111 ; 2
 afterLogo:
-	nop
+	ld 	hl, _SCRN0
+	ld	d, l
+	;ld 	bc, 0
+.cpy:
+	ld	a, $C
+	ld	c, a
+.cpystr:
+	inc a
+	ld 	[hl+], a
+	dec	c
+	jr	nz, .cpystr
+	ld 	[hl+], a
+	ADD HL, DE
+	;ld 	[hl+], a
+	;inc a
+	;ld 	[hl+], a
+	;inc a
+	;ld 	[hl+], a
+	;inc a
+	;ld 	[hl+], a
+	;ld 	[hl+], a
+	dec b
+	jr	nz, .cpy
+	ld	hl, rLCDC
+	ld	a, LCDCF_ON | LCDCF_BGON | LCDCF_BG8000 | LCDCF_OBJON
+	ld	[hl+], a
+.loop:
+	jr .loop
 	;jr afterLogo
 SECTION "ChecksumFix", ROM0[$13F]
 	; needed to fix checksum, which is set at 0x10D
 	db	 $6 ; checkha fixes this
 SECTION "End64b", ROM0[$140]
-	nop
+	; Is here to generate warnings
+	; Will be cut off
+	rst $38
 	;checksum is $0134-014C
 SECTION "HeaderCgb", ROM0[$142]
 	; Needed for "hacking" the title checksum
