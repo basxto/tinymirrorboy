@@ -1,10 +1,10 @@
-SIERPINSKIBOY 
+TINYMIRRORBOY
 v1.0.0 
 -
-This is 256B CGB ROM, which runs in DMG mode
-mode. An entry for the Oldskool 4K Intro
-compo of Revision 2021. Depends on original
-bootrom of CGB-A to CGB-E, tested on CGB-D.
-ROM is 334B, but 0xB0 to 0xFF are unused.
-Entry point is 0x100 as defined by bootrom.
-Contains generated graphics and "music".
+Writes "LOVE22" all over the screen.
+This is a 64B CGB ROM, which runs in DMG 
+mode. An entry for the 64 Byte Oldschool
+Intro compo of LoveByte 2022. Tested on
+CGB-D. 80B Header (bytes used twice, wrapped
+around) and 29B code + 10B data in useless
+header bytes.
