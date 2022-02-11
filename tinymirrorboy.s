@@ -43,7 +43,8 @@ SECTION "HeaderFree2", ROM0[$11C]
 	db %01111110,%01000111 ; E
 	db %01010101,%01010010 ; V
 	db %01101001,%10010110 ; O
-	db %01000100,%01001111 ; L
+	;db %01000100,%01001111 ; L
+	db %10001000,%10001111 ; L
 
 afterLogo:
 	dec	h
@@ -61,9 +62,9 @@ afterLogo:
 	dec	e
 	jr	nz, .cpystr
 	ld 	[hl+], a
-	ld	e, 6	
+	ld	e, a
 	add hl, de
-	dec e
+	ld	e, 5
 	dec	b
 	jr	nz, .cpy
 	pop hl
