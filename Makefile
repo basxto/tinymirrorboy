@@ -18,14 +18,14 @@ ROM:=tinymirrorboy
 EXT:=cgb
 
 .PHONY: build clean
-build: $(ROM).64b.$(EXT) $(ROM).mirrored.384b.$(EXT) $(ROM).mirrored.16k.$(EXT)
+build: $(ROM).64b.$(EXT) $(ROM).mirrored.384b.$(EXT) $(ROM).mirrored.16k.$(EXT) $(ROM).mirrored.32k.$(EXT)
 
 %.o: %.s
 	$(AS) $(ASFLAGS) -o $@ $^
 
 %.$(EXT): %.o
 	$(LD) $(LDFLAGS) -o $@ -m $*.map -n $*.sym $^
-	$(TCH) $@ '$$142' '$(palette)'
+#	$(TCH) $@ '$$142' '$(palette)'
 #	$(FIX) -f h $@
 	$(CHA) $@ '$$13F'
 
@@ -40,6 +40,9 @@ build: $(ROM).64b.$(EXT) $(ROM).mirrored.384b.$(EXT) $(ROM).mirrored.16k.$(EXT)
 	cp $< $@
 	for i in $$(seq 41); do cat $< >> $@; done
 	for i in $$(seq 4); do cat $*.64b.$(EXT) >> $@; done
+
+%.mirrored.32k.$(EXT): %.mirrored.16k.$(EXT)
+	cat $< $< >> $@
 
 clean:
 	$(RM) $(ROM).$(EXT) *.o *.sym *.map
