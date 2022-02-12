@@ -9,6 +9,7 @@ LD=$(RGBDS)rgblink
 LDFLAGS=
 FIX:=$(RGBDS)rgbfix
 CHA:=tools/checkha/checkha.py
+BPS:=flips
 DD:=dd
 # cgb builtin palette
 palette:=0x9c
@@ -39,10 +40,14 @@ build: $(ROM).64b.$(EXT) $(ROM).mirrored.384b.$(EXT) $(ROM).mirrored.16k.$(EXT) 
 	for i in $$(seq 4); do cat $*.64b.$(EXT) >> $@; done
 
 %.mirrored.32k.$(EXT): %.mirrored.16k.$(EXT)
-	cat $< $< >> $@
+	cat $< $< > $@
 
 %.zip: $(ROM).64b.$(EXT) $(ROM).mirrored.384b.$(EXT) $(ROM).mirrored.16k.$(EXT) $(ROM).mirrored.32k.$(EXT)
 	zip -r $@ $^ Makefile README.md FILE_ID.DIZ $(ROM).png $(ROM).mp4
+
+# place the original roms in ori/
+%.bps: ori/% %
+	$(BPS) --create $^ $@
 
 clean:
 	$(RM) $(ROM).$(EXT) *.o *.sym *.map
