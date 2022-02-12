@@ -57,7 +57,7 @@ afterLogo:
 	ld	e, a
 	add hl, de
 	ld	e, 5
-	dec	b
+	inc	b
 	jr	nz, .cpy
 	pop hl
 	ld	[hl], h
