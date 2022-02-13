@@ -3,13 +3,16 @@
 COMPO & PLATFORMS
 =================
 This is for the 64 Byte Oldschool Intro compo of LoveByte22.
+
 Target platforms is the Game Boy Color (CGB) and for v1.0.1 also Game Boy Advance (AGB).
 
 
 WHAT RUNS WHERE
 ===============
 `tinymirrorboy.384b.cgb` should work with all emulators and cartridges, where this doesn’t work `tinymirrorboy.16k.cgb` or `tinymirrorboy.32k.cgb` should run.
+
 It was tested on [SameBoy][] (v0.14.3; CGB modus), [Emulicious][] (only with original CGB bootrom; CGB modus), [BGB][] (v1.5.9; CGB modus) and on CGB (CGB-D) with [EVERDRIVE GB X3][edgbx3].
+
 I know no target where the actual 64B ROM `tinymirrorboy.64b.cgb` runs.
 
 
@@ -36,6 +39,7 @@ The Game Boy header is consider being 80B (`$100`-`$14F` as defined by [gbdev pa
 MOTIVATION
 ==========
 This self built Game Boy 96B cartridge by insideGadgets: https://www.youtube.com/watch?v=Ss0evFqgB6M
+
 Their approach gives them only 16B that can be used for code. With my apporach there would be 71 (or 69 if you don’t count the mandatory `jr`) Bytes free.
 
 PITFALLS
@@ -65,6 +69,7 @@ Title bytes `$100` and `$101` are surely lost for title checksum hacking.
 PERSPECTIVE 
 ===========
 What is considered the header could be from `$100`-`$11B` (28B): 2B `jr` + 1B header checksum + `$00` (CGB Byte) + 24B logo.
+
 It gets trickier if you also want to hack the title checksum, then it would be 2B `jr` + title checksum + header checksum or 1B `rst` + title checksum + header checksum + `$00`, but this is unstable when you have to put checksum in the CGB Byte, for half the values it won’t boot in DMG compatibility mode. Having the header checksum in the title, makes it harder to hack the checksums.
 
 Somebody could try to build this type `$66` (a value from the logo) cartridge that ignores the upper 13 bits of the address.
