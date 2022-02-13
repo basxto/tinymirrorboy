@@ -16,12 +16,12 @@ SECTION "HeaderLogo", ROM0[$104]
 	adc  a, $ED     ; New licensee (unimportant)
 	ld   h, [hl]    ; sets SGB to $66 / no SGB ; hl is usually $007C
 	ld   h, [hl]    ; cartridge Type $66 unknown
-	; v ROM size $CC unknown; RAM size $0D unknown
+	; v== ROM size $CC unknown; RAM size $0D unknown
 	call z, $000D   ; destination Japanese ; @$108
 	dec  bc         ; use old licensee code
 	inc  bc         ; rom version $03
 	ld   [hl], e    ; header checksum $73 (has to be fixed else where)
-	nop	            ; global checksum:    00
+	nop             ; global checksum:    00
 	add  e          ;                  $83
 	nop
 	inc  c
