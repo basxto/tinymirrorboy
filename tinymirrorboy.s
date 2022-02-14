@@ -6,7 +6,7 @@ SECTION "HeaderFree1", ROM0[$100]
 	; last 3B of title/manufacturer code (could be used to hack the title checksum)
 	; CGB byte (&0x80==1 is CGB mode; &0x83!=0 is PGB mode aka broken)
 start:
-	ld	l, LOW(rLCDC)
+	ld	c, LOW(rLCDC)
 	jr	afterLogo
 	; we could fall through and run the logo
 SECTION "HeaderLogo", ROM0[$104]
@@ -37,43 +37,45 @@ SECTION "HeaderLogo", ROM0[$104]
 SECTION "HeaderFree2", ROM0[$11C]
 	; This is being used for copying 4x4 images
 	; CGB bootrom upscales this to 8x8
-	db %01100001,%00100111 ; 2 ; ld h,c;daa
-	db %01111110,%01000111 ; E ; ld a,[hl];ld b,a
-	db %01010101,%01010010 ; V ; ld d,l;ld d,d (special debug break for BGB)
-	db %01101001,%10010110 ; O ; ld l,c;sub [hl]
 	db %10001000,%10001111 ; L ; adc b;adc a
+	db %01101001,%10010110 ; O ; ld l,c;sub [hl]
+	db %01010101,%01010010 ; V ; ld d,l;ld d,d (special debug break for BGB)
+	db %01111110,%01000111 ; E ; ld a,[hl];ld b,a
+	db %01100001,%00100111 ; 2 ; ld h,c;daa
 
 afterLogo:
-	dec	h
-	; store address for later reenabling
-	push hl
 	; disable display
-	ld	[hl], b	; @$128 ; b is 0 on cgb / 1 on agb
-	; we start at $40 and do +8 once, then +5 254(cgb)/255(agb) times
-	ld 	h, HIGH(_SCRN0)-1;9800
+	ld	[c], a
+	; we start at $40 and do +8 once, then +10 255 times
+	ld 	h, HIGH(_SCRN0)+8;$9800 +$800 (offset to not overwrite tile data)
+	ld	sp, hl
 .cpy: ; loop copy all over the screen
-	ld	a, $D+5  ; we need sth in c
-.cpystr: ; copy str "L O V E B Y T E 2 2             "
-	dec a
-	ld 	[hl+], a
-	inc	hl ; ' '
+	ld	b, $D+4  ; set to start character
+	push bc ; copy str "2 "
+.cpystr: ; copy str "2 E V O L            " (copy in reverse)
+	; copy with a push slide ; c is $40 (space)
+	push	bc
+	dec b
 	dec	e ; (after boot) e is 8 (happens offscreen)
 	jr	nz, .cpystr
-	ld 	[hl+], a
-	ld	e, a
-	add hl, de ; d is 0 ; so we add $D
+	add	sp, -11 ; add 11 spaces
 	ld	e, 5
-	inc	b; (after boot) b is 0 on cgb / 1 on agb
+	dec	d; (after boot) b is 0 on cgb / 1 on agb
 	jr	nz, .cpy
-	pop hl
-	ld	[hl], h
+	; enable display
+	ld	a, LCDCF_ON | LCDCF_BGON | LCDCF_BG8000
+	ld	[c], a
 .loop:
 
 	jr .loop
-SECTION "ChecksumFix", ROM0[$13F]
+SECTION "ChecksumFix", ROM0[$13E]
+	; needed to hack title checksum
+	nop ; titcheck fixes this
 	; needed to fix checksum, which is set at 0x10D
-	db	 $6 ; checkha fixes this
+	nop  ; checkha fixes this
 SECTION "End64b", ROM0[$140]
 	; Is here to generate warnings
 	; Will be cut off
-	rst $38
+	; little hack for titcheck, which can't handle mirrored roms
+	ld	c, LOW(rLCDC)
+	jr	afterLogo ; actual address irrelevant, only first three byte matter
