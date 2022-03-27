@@ -8,7 +8,7 @@ ASFLAGS=--halt-without-nop
 LD=$(RGBDS)rgblink
 LDFLAGS=
 FIX:=$(RGBDS)rgbfix
-CHA:=tools/checkha/checkha.py
+TCH:=tools/titchack/titchack.py
 BPS:=flips
 DD:=dd
 # cgb builtin palette
@@ -25,7 +25,7 @@ build: $(ROM).64b.$(EXT) $(ROM).mirrored.384b.$(EXT) $(ROM).mirrored.16k.$(EXT) 
 
 %.$(EXT): %.o
 	$(LD) $(LDFLAGS) -o $@ -m $*.map -n $*.sym $^
-	$(CHA) $@ '$$13F'
+	$(TCH) -theader --mirror64 yes $@ '$$13F'
 
 %.64b.$(EXT): %.$(EXT)
 	$(DD) if=$< of=$@ bs=1 skip=$$((0x100)) count=$$((0x40))

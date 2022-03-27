@@ -4,7 +4,7 @@ COMPO & PLATFORMS
 =================
 This is for the 64 Byte Oldschool Intro compo of LoveByte22.
 
-Target platforms is the Game Boy Color (CGB) and for v1.0.1 also Game Boy Advance (AGB).
+Target platforms are the Game Boy Color (CGB) and for v1.0.1 also Game Boy Advance (AGB).
 
 
 WHAT RUNS WHERE
@@ -13,13 +13,16 @@ WHAT RUNS WHERE
 
 It was tested on [SameBoy][] (v0.14.3; CGB modus), [Emulicious][] (only with original CGB bootrom; CGB modus), [BGB][] (v1.5.9; CGB modus) and on CGB (CGB-D) with [EVERDRIVE GB X3][edgbx3].
 
-I know no target where the actual 64B ROM `tinymirrorboy.64b.cgb` runs.
+Only [Emulicious][] can run the actual 64B ROM `tinymirrorboy.64b.cgb`.
 
 
 v1.0.1
 ------
 Tested on [SameBoy][] (v0.14.3; AGB modus) and [Emulicious][] (only with original AGB bootrom; CGB modus), but not on real hardware
 
+v1.0.2
+------
+Tested on [Emulicious][] (only with original AGB/CGB bootrom; CGB modus)
 
 TRICKS USED
 ===========
@@ -46,7 +49,7 @@ PITFALLS
 ========
 The header checksum can’t be directly set and must be fixed with bytes `$134`-`13F` or `$100`-`$10C`.
 
-Title bytes `$100` and `$101` are surely lost for title checksum hacking.
+All changable header bytes relevant for the header checksum are within the title.
 
 `$103` needs values <`$80`, this allows only following opcodes:
 * `nop`
@@ -70,7 +73,7 @@ PERSPECTIVE
 ===========
 What is considered the header could be from `$100`-`$11B` (28B): 2B `jr` + 1B header checksum + `$00` (CGB Byte) + 24B logo.
 
-It gets trickier if you also want to hack the title checksum, then it would be 2B `jr` + title checksum + header checksum or 1B `rst` + title checksum + header checksum + `$00`, but this is unstable when you have to put checksum in the CGB Byte, for half the values it won’t boot in DMG compatibility mode. Having the header checksum in the title, makes it harder to hack the checksums.
+Also hacking the title checksum is not possible in 64B.
 
 Somebody could try to build this type `$66` (a value from the logo) cartridge that ignores the upper 13 bits of the address.
 

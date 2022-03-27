@@ -69,10 +69,9 @@ afterLogo:
 
 	jr .loop
 SECTION "ChecksumFix", ROM0[$13E]
-	; needed to hack title checksum
-	nop ; titcheck fixes this
+	nop
 	; needed to fix checksum, which is set at 0x10D
-	nop  ; checkha fixes this
+	nop  ; titchak fixes this
 SECTION "End64b", ROM0[$140]
 	; Is here to generate warnings
 	; Will be cut off
